@@ -9,6 +9,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
 import javafx.scene.image.Image;
+import javafx.scene.control.TextArea;
 
 public class HelloWorld extends Application {
     public static void main(String[] args) {
@@ -19,25 +20,30 @@ public class HelloWorld extends Application {
     private double mouseDownY;
     private ArrayList<Line> lines;
     private int posOfCurrentLineInList = -1; // so it will be zero when first incremented
-    
+    private TextArea textArea;
+    private int imageWidth = 300;
+    private int imageHeight = 250;
+    private double imageHeightScaleForAllocatingSpaceForTextarea;
     @Override
     public void start(Stage primaryStage) {
         lines = new ArrayList<>();
-        
-        
-	
-	
-
+        imageHeightScaleForAllocatingSpaceForTextarea = 1.5;
 
         primaryStage.setTitle("Draw Shapes");
         
         Pane root = new Pane();
-	Scene scene = new Scene(root, 300, 250);
+        double sceneHeight = imageHeight * imageHeightScaleForAllocatingSpaceForTextarea;
+	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
-	scene.getStylesheets().add
-	 (HelloWorld.class.getResource("Login.css").toExternalForm());
-	primaryStage.show();
-	drawImage(root);
+	    scene.getStylesheets().add(HelloWorld.class.getResource("login.css").toExternalForm());
+	    primaryStage.show();
+	    drawImage(root);
+
+        textArea = new TextArea("Shape output will go here.");
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setLayoutY(imageHeight);
+        root.getChildren().add(textArea);
 
         root.addEventFilter(MouseEvent.MOUSE_PRESSED, 
                     new EventHandler<MouseEvent>() {
@@ -47,15 +53,17 @@ public class HelloWorld extends Application {
                             mouseDownX = event.getSceneX();
                             mouseDownY = event.getSceneY();
                             
-                            Line line = new Line();
-                            lines.add(line);
-                            line.setStartX(mouseDownX);
-                            line.setStartY(mouseDownY);
-                            //line is initially a dot
-                            line.setEndX(mouseDownX);
-                            line.setEndY(mouseDownY);
-                            posOfCurrentLineInList++;
-                            root.getChildren().add(line);
+                            if (mouseDownY < imageHeight) {
+                                Line line = new Line();
+                                lines.add(line);
+                                line.setStartX(mouseDownX);
+                                line.setStartY(mouseDownY);
+                                //line is initially a dot
+                                line.setEndX(mouseDownX);
+                                line.setEndY(mouseDownY);
+                                posOfCurrentLineInList++;
+                                root.getChildren().add(line);
+                            }
                         }
                     });
 
@@ -72,9 +80,19 @@ public class HelloWorld extends Application {
                         @Override
                         public void handle(MouseEvent event) {
                             System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
-                            Line currentLine = lines.get(posOfCurrentLineInList);
-                            currentLine.setEndX(event.getSceneX());
-                            currentLine.setEndY(event.getSceneY());
+                            if (lines.size() > 0) {
+                                Line currentLine = lines.get(posOfCurrentLineInList);
+                                currentLine.setEndX(event.getSceneX() >= 0 ? event.getSceneX() : 0);
+                                double endY;
+                                if (event.getSceneY() < 0) {
+                                    endY = 0;
+                                } else if (event.getSceneY() > imageHeight) {
+                                    endY = imageHeight;
+                                } else {
+                                    endY = event.getSceneY();
+                                }
+                                currentLine.setEndY(endY);
+                            }
                         }
                     });
 
