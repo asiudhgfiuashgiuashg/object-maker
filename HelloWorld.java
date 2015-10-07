@@ -62,6 +62,24 @@ public class HelloWorld extends Application {
                                 line.setEndX(mouseDownX);
                                 line.setEndY(mouseDownY);
                                 posOfCurrentLineInList++;
+
+                                //for selecting lines
+                                line.setOnMousePressed(new EventHandler<MouseEvent>() {
+                                    @Override
+                                    public void handle(MouseEvent event) {
+
+                                    }
+                                });
+
+                                line.setOnMouseReleased(new EventHandler<MouseEvent>() {
+                                    @Override
+                                    public void handle(MouseEvent event) {
+                                        
+                                    }
+                                });
+
+
+
                                 root.getChildren().add(line);
                             }
                         }
@@ -95,7 +113,6 @@ public class HelloWorld extends Application {
                             }
                         }
                     });
-
 
         primaryStage.show();
     }
