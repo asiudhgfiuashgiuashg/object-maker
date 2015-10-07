@@ -25,14 +25,19 @@ public class HelloWorld extends Application {
         lines = new ArrayList<>();
         
         
-
+	
+	
 
 
         primaryStage.setTitle("Draw Shapes");
         
         Pane root = new Pane();
-
-        primaryStage.setScene(new Scene(root, 300, 250));
+	Scene scene = new Scene(root, 300, 250);
+        primaryStage.setScene(scene);
+	scene.getStylesheets().add
+	 (HelloWorld.class.getResource("Login.css").toExternalForm());
+	primaryStage.show();
+	drawImage(root);
 
         root.addEventFilter(MouseEvent.MOUSE_PRESSED, 
                     new EventHandler<MouseEvent>() {
@@ -77,10 +82,11 @@ public class HelloWorld extends Application {
         primaryStage.show();
     }
 
-    private void drawImage(String name)
+    private void drawImage(Pane root)
     {
-        Image image = new Image("../core/assets/" + name);
-        
+	
+        /*Image image = new Image("../core/assets/color_wheel.png);
+        root.getChildren().add(image);*/
 
     }
 }
