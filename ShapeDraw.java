@@ -17,7 +17,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.concurrent.Task;
 
-public class HelloWorld extends Application {
+public class ShapeDraw extends Application {
     public static void main(String[] args) {
         launch(args);
     }
@@ -45,7 +45,7 @@ public class HelloWorld extends Application {
         double sceneHeight = imageHeight * imageHeightScaleForAllocatingSpaceForTextarea;
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
-	    scene.getStylesheets().add(HelloWorld.class.getResource("login.css").toExternalForm());
+	    scene.getStylesheets().add(ShapeDraw.class.getResource("login.css").toExternalForm());
 	    primaryStage.show();
 	    drawImage(root);
 
