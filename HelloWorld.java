@@ -8,8 +8,14 @@ import javafx.stage.Stage;
 import javafx.scene.shape.Line;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.scene.image.Image;
 import javafx.scene.control.TextArea;
+import javafx.scene.paint.Color;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.concurrent.Task;
 
 public class HelloWorld extends Application {
     public static void main(String[] args) {
@@ -18,12 +24,16 @@ public class HelloWorld extends Application {
 
     private double mouseDownX;
     private double mouseDownY;
-    private ArrayList<Line> lines;
+    private List<SelectableLine> lines;
     private int posOfCurrentLineInList = -1; // so it will be zero when first incremented
     private TextArea textArea;
     private int imageWidth = 300;
     private int imageHeight = 250;
     private double imageHeightScaleForAllocatingSpaceForTextarea;
+    private boolean lineInProgress = true;
+    private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
+    private final Color DARKER_GREY = Color.rgb(10, 10, 10);
+
     @Override
     public void start(Stage primaryStage) {
         lines = new ArrayList<>();
@@ -45,77 +55,130 @@ public class HelloWorld extends Application {
         textArea.setLayoutY(imageHeight);
         root.getChildren().add(textArea);
 
-        root.addEventFilter(MouseEvent.MOUSE_PRESSED, 
-                    new EventHandler<MouseEvent>() {
+        root.setOnDragDetected(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("dragdetected");
+                //System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
+                lineInProgress = true;
+
+                mouseDownX = event.getSceneX();
+                mouseDownY = event.getSceneY();
+
+            
+                if (mouseDownY < imageHeight) {
+                    SelectableLine line = new SelectableLine();
+                    line.setStroke(LIGHTER_GREY);
+                    lines.add(line);
+                    line.setStartX(mouseDownX);
+                    line.setStartY(mouseDownY);
+                    //line is initially a dot
+                    line.setEndX(mouseDownX);
+                    line.setEndY(mouseDownY);
+
+                    line.setStrokeWidth(4);
+
+                    posOfCurrentLineInList++;
+
+                    //for selecting lines
+                    line.setOnMousePressed(new EventHandler<MouseEvent>() {
+                        //indicate mouse down click
                         @Override
                         public void handle(MouseEvent event) {
-                            System.out.println("MOUSE_PRESSED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
-                            mouseDownX = event.getSceneX();
-                            mouseDownY = event.getSceneY();
-                            
-                            if (mouseDownY < imageHeight) {
-                                Line line = new Line();
-                                lines.add(line);
-                                line.setStartX(mouseDownX);
-                                line.setStartY(mouseDownY);
-                                //line is initially a dot
-                                line.setEndX(mouseDownX);
-                                line.setEndY(mouseDownY);
-                                posOfCurrentLineInList++;
-
-                                //for selecting lines
-                                line.setOnMousePressed(new EventHandler<MouseEvent>() {
-                                    @Override
-                                    public void handle(MouseEvent event) {
-
-                                    }
-                                });
-
-                                line.setOnMouseReleased(new EventHandler<MouseEvent>() {
-                                    @Override
-                                    public void handle(MouseEvent event) {
-                                        
-                                    }
-                                });
-
-
-
-                                root.getChildren().add(line);
+                            if (line.isSelected()) {
+                                line.setStroke(Color.DARKRED);
+                            } else {
+                                line.setStroke(DARKER_GREY);
                             }
                         }
                     });
 
-        root.addEventFilter(MouseEvent.MOUSE_RELEASED, 
-                    new EventHandler<MouseEvent>() {
+                    line.setOnMouseReleased(new EventHandler<MouseEvent>() {
                         @Override
                         public void handle(MouseEvent event) {
-                            System.out.println("MOUSE_RELEASED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
+                            if (line.isSelected()) {
+                                line.setStroke(LIGHTER_GREY);
+                                line.setSelected(false);
+                            } else {
+                                line.setStroke(Color.RED);
+                                line.setSelected(true);
+                            }
                         }
                     });
-                    
-        root.addEventFilter(MouseEvent.MOUSE_DRAGGED, 
-                    new EventHandler<MouseEvent>() {
-                        @Override
-                        public void handle(MouseEvent event) {
-                            System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
-                            if (lines.size() > 0) {
-                                Line currentLine = lines.get(posOfCurrentLineInList);
-                                currentLine.setEndX(event.getSceneX() >= 0 ? event.getSceneX() : 0);
-                                double endY;
-                                if (event.getSceneY() < 0) {
-                                    endY = 0;
-                                } else if (event.getSceneY() > imageHeight) {
-                                    endY = imageHeight;
-                                } else {
-                                    endY = event.getSceneY();
+
+
+
+                    root.getChildren().add(line);
+                }
+            }
+        });
+
+        root.setOnMouseReleased(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("mouse released");
+                if (lineInProgress) {
+                    lineInProgress = false;
+                }   
+            }
+        });
+        root.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("mousedragged");
+                //System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
+                if (lines.size() > 0 && lineInProgress) {
+                    Line currentLine = lines.get(posOfCurrentLineInList);
+                    currentLine.setEndX(event.getSceneX() >= 0 ? event.getSceneX() : 0);
+                    double endY;
+                    if (event.getSceneY() < 0) {
+                        endY = 0;
+                    } else if (event.getSceneY() > imageHeight) {
+                        endY = imageHeight;
+                    } else {
+                        endY = event.getSceneY();
+                    }
+                    currentLine.setEndY(endY);
+                }
+            }
+        });
+
+
+        // handle keypresses here:
+        root.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                System.out.println(event);
+                if (event.getCode() == KeyCode.DELETE) {
+                    for (SelectableLine line: lines) {
+                        if (line.isSelected()) {
+                            System.out.println(root.getChildren().size());
+                            root.getChildren().removeAll(line);
+                            System.out.println(root.getChildren().size());
+
+                            // ui thread shouldn't modify lines list apparently WHY???
+                            Task<Void> removeLine = new Task<Void>() {
+                                @Override
+                                protected Void call() {
+                                    lines.remove(line);
+                                    
+                                    return null;
                                 }
-                                currentLine.setEndY(endY);
-                            }
+                            };
+
+                            root.getChildren().remove(line);
+                            System.out.println("removing line: " + line);
                         }
-                    });
+                    }
+                }
+            }
+        });
+
+        root.requestFocus(); //need input focus otherwise keypresses won't work
 
         primaryStage.show();
     }
+    
 
     private void drawImage(Pane root)
     {
@@ -124,4 +187,22 @@ public class HelloWorld extends Application {
         root.getChildren().add(image);*/
 
     }
+
+    private class SelectableLine extends Line {
+        private boolean selected;
+
+        private SelectableLine() {
+            super();
+            selected = false;
+        }
+
+        private void setSelected(boolean selected) {
+            this.selected = selected;
+        }
+
+        private boolean isSelected() {
+            return selected;
+        }
+    }
 }
+
