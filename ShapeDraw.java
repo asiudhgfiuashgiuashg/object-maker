@@ -16,6 +16,9 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.concurrent.Task;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
 
 public class ShapeDraw extends Application {
     public static void main(String[] args) {
@@ -41,12 +44,15 @@ public class ShapeDraw extends Application {
 
         primaryStage.setTitle("Draw Shapes");
         
-        Pane root = new Pane();
+        VBox root = new VBox();
+        Pane imagePane = new Pane();
+        imagePane.setPrefSize(imageWidth, imageHeight);
         double sceneHeight = imageHeight * imageHeightScaleForAllocatingSpaceForTextarea;
+        root.getChildren().add(imagePane);
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
 	    scene.getStylesheets().add(ShapeDraw.class.getResource("login.css").toExternalForm());
-	    primaryStage.show();
 	    drawImage(root);
 
         textArea = new TextArea("Shape output will go here.");
@@ -54,8 +60,19 @@ public class ShapeDraw extends Application {
         textArea.setWrapText(true);
         textArea.setLayoutY(imageHeight);
         root.getChildren().add(textArea);
+        root.setAlignment(Pos.BOTTOM_CENTER);
+        primaryStage.show();
 
-        root.setOnDragDetected(new EventHandler<MouseEvent>() {
+        imagePane.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("mouse entered imagePane - focusing image Pane");
+                imagePane.requestFocus();
+            }
+        });
+
+
+        imagePane.setOnDragDetected(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 System.out.println("dragdetected");
@@ -108,12 +125,12 @@ public class ShapeDraw extends Application {
 
 
 
-                    root.getChildren().add(line);
+                    imagePane.getChildren().add(line);
                 }
             }
         });
 
-        root.setOnMouseReleased(new EventHandler<MouseEvent>() {
+        imagePane.setOnMouseReleased(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 System.out.println("mouse released");
@@ -122,11 +139,10 @@ public class ShapeDraw extends Application {
                 }   
             }
         });
-        root.setOnMouseDragged(new EventHandler<MouseEvent>() {
+        imagePane.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                System.out.println("mousedragged");
-                //System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
+                System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
                 if (lines.size() > 0 && lineInProgress) {
                     Line currentLine = lines.get(posOfCurrentLineInList);
                     currentLine.setEndX(event.getSceneX() >= 0 ? event.getSceneX() : 0);
@@ -145,7 +161,7 @@ public class ShapeDraw extends Application {
 
 
         // handle keypresses here:
-        root.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        imagePane.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 System.out.println(event);
@@ -166,7 +182,7 @@ public class ShapeDraw extends Application {
                                 }
                             };
 
-                            root.getChildren().remove(line);
+                            imagePane.getChildren().remove(line);
                             System.out.println("removing line: " + line);
                         }
                     }
