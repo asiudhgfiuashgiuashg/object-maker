@@ -28,7 +28,6 @@ public class ShapeDraw extends Application {
     private double mouseDownX;
     private double mouseDownY;
     private List<SelectableLine> lines;
-    private int posOfCurrentLineInList = -1; // so it will be zero when first incremented
     private TextArea textArea;
     private int imageWidth = 300;
     private int imageHeight = 250;
@@ -95,8 +94,6 @@ public class ShapeDraw extends Application {
 
                     line.setStrokeWidth(4);
 
-                    posOfCurrentLineInList++;
-
                     //for selecting lines
                     line.setOnMousePressed(new EventHandler<MouseEvent>() {
                         //indicate mouse down click
@@ -144,7 +141,7 @@ public class ShapeDraw extends Application {
             public void handle(MouseEvent event) {
                 System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
                 if (lines.size() > 0 && lineInProgress) {
-                    Line currentLine = lines.get(posOfCurrentLineInList);
+                    Line currentLine = lines.get(lines.size() - 1);
                     currentLine.setEndX(event.getSceneX() >= 0 ? event.getSceneX() : 0);
                     double endY;
                     if (event.getSceneY() < 0) {
@@ -190,7 +187,13 @@ public class ShapeDraw extends Application {
             }
         });
 
-        root.requestFocus(); //need input focus otherwise keypresses won't work
+        textArea.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("mouse entered textArea - focusing text area");
+                imagePane.requestFocus();
+            }
+        });
 
         primaryStage.show();
     }
