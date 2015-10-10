@@ -65,6 +65,7 @@ public class ShapeDraw extends Application {
         textArea = new TextArea("Shape output will go here.");
         textArea.setEditable(false);
         textArea.setWrapText(true);
+	textArea.setPrefRowCount(20);
         textArea.setLayoutY(imageHeight);
         root.getChildren().add(textArea);
         root.setAlignment(Pos.BOTTOM_CENTER);
