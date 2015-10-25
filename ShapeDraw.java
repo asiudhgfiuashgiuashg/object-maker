@@ -117,7 +117,8 @@ public class ShapeDraw extends Application {
                     line.setOnMouseReleased(new EventHandler<MouseEvent>() {
                         @Override
                         public void handle(MouseEvent event) {
-                            if (line.isSelected()) {
+
+                            if (line.isSelected() || lineInProgress) {
                                 line.setStroke(LIGHTER_GREY);
                                 line.setSelected(false);
                             } else {
