@@ -31,7 +31,7 @@ public class ShapeDraw extends Application {
     private List<SelectableLine> lines;
     private TextArea textArea;
     private int imageWidth = 300;
-    private int imageHeight = 250;
+    private int imageHeight = 300;
     private double imageHeightScaleForAllocatingSpaceForTextarea;
     private boolean lineInProgress = true;
     private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
@@ -53,17 +53,18 @@ public class ShapeDraw extends Application {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
 
-	Image image = new Image("color_wheel.png");
-	ImageView view = new ImageView();
-	view.setImage(image);
-	imagePane.getChildren().add(view);
+    	Image image = new Image("color_wheel.png");
+    	ImageView view = new ImageView();
+    	view.setImage(image);
+    	imagePane.getChildren().add(view);
 	
 
         textArea = new TextArea("Shape output will go here.");
         textArea.setEditable(false);
         textArea.setWrapText(true);
-	textArea.setPrefRowCount(20);
-        textArea.setLayoutY(imageHeight);
+
+        textArea.setPrefHeight(sceneHeight - imageHeight);
+        System.out.println("imageHeight: " + String.valueOf(imageHeight));
         root.getChildren().add(textArea);
         root.setAlignment(Pos.BOTTOM_CENTER);
         primaryStage.show();
