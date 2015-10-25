@@ -52,11 +52,14 @@ public class ShapeDraw extends Application {
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-
+        primaryStage.sizeToScene();
+        
     	Image image = new Image("color_wheel.png");
     	ImageView view = new ImageView();
     	view.setImage(image);
     	imagePane.getChildren().add(view);
+	    
+
 	
 
         textArea = new TextArea("Shape output will go here.");
@@ -68,6 +71,8 @@ public class ShapeDraw extends Application {
         root.getChildren().add(textArea);
         root.setAlignment(Pos.BOTTOM_CENTER);
         primaryStage.show();
+	
+	    System.out.println(scene.getWidth());
 
         imagePane.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
