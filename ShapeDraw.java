@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.scene.shape.Line;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +52,12 @@ public class ShapeDraw extends Application {
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-	    scene.getStylesheets().add(ShapeDraw.class.getResource("login.css").toExternalForm());
-	    drawImage(root);
+
+	Image image = new Image("color_wheel.png");
+	ImageView view = new ImageView();
+	view.setImage(image);
+	imagePane.getChildren().add(view);
+	
 
         textArea = new TextArea("Shape output will go here.");
         textArea.setEditable(false);
