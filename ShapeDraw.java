@@ -48,7 +48,7 @@ public class ShapeDraw extends Application {
             System.out.println("pls use a real file ty");
             System.exit(0);
         }
-        
+
         imageWidth = image.getWidth();
         imageHeight = image.getHeight();
 
@@ -141,7 +141,6 @@ public class ShapeDraw extends Application {
                                 line.setStroke(LIGHTER_GREY);
                                 line.setSelected(false);
                             } else {
-                                line.setStroke(Color.RED);
                                 line.setSelected(true);
                             }
                         }
@@ -211,6 +210,11 @@ public class ShapeDraw extends Application {
                         }
                     }
                 }
+                if (event.isControlDown() && event.getCode() == KeyCode.A) {
+                    for (SelectableLine line: lines) {
+                        line.setSelected(true);
+                    }
+                }
             }
         });
 
@@ -243,6 +247,9 @@ public class ShapeDraw extends Application {
         }
 
         private void setSelected(boolean selected) {
+            if (selected) {
+                this.setStroke(Color.RED);
+            }
             this.selected = selected;
         }
 
