@@ -40,12 +40,16 @@ public class ShapeDraw extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        fileName = this.getParameters().getUnnamed().get(0);
+        
         Image image = null;
         try {
+           fileName = this.getParameters().getUnnamed().get(0);
            image = new Image(fileName);
         } catch (IllegalArgumentException e) {
             System.out.println("pls use a real file ty");
+            System.exit(0);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("pls provide file name ty");
             System.exit(0);
         }
 
@@ -191,26 +195,20 @@ public class ShapeDraw extends Application {
             public void handle(KeyEvent event) {
                 System.out.println(event);
                 if (event.getCode() == KeyCode.DELETE) {
+                    List<SelectableLine> linesToRemove = new ArrayList<SelectableLine>();
                     for (SelectableLine line: lines) {
                         if (line.isSelected()) {
-                            System.out.println(root.getChildren().size());
-                            root.getChildren().removeAll(line);
-                            System.out.println(root.getChildren().size());
-                            lines.remove(line);
-
-                            // ui thread shouldn't modify lines list apparently WHY???
-                            Task<Void> removeLine = new Task<Void>() {
-                                @Override
-                                protected Void call() {
-                                    lines.remove(line);
-                                    
-                                    return null;
-                                }
-                            };
-
-                            imagePane.getChildren().remove(line);
-                            System.out.println("removing line: " + line);
+                            linesToRemove.add(line);
                         }
+                    }
+                    for (SelectableLine line: linesToRemove) {
+                        lines.remove(line);
+                        System.out.println("REMOVED A LIEN");
+
+                        imagePane.getChildren().remove(line);
+                        System.out.println("removing line: " + line);
+
+                        resetLinePoints(textArea);
                     }
                 }
                 if (event.isControlDown() && event.getCode() == KeyCode.A) {
