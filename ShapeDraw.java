@@ -77,7 +77,7 @@ public class ShapeDraw extends Application {
 	
 
         textArea = new TextArea("Shape output will go here.");
-        textArea.setEditable(false);
+        textArea.setEditable(true);
         textArea.setWrapText(true);
 
         textArea.setPrefHeight(sceneHeight - imageHeight);
@@ -159,6 +159,8 @@ public class ShapeDraw extends Application {
                 System.out.println("mouse released");
                 if (lineInProgress) {
                     lineInProgress = false;
+                    resetLinePoints(textArea);
+
                 }   
             }
         });
@@ -194,6 +196,7 @@ public class ShapeDraw extends Application {
                             System.out.println(root.getChildren().size());
                             root.getChildren().removeAll(line);
                             System.out.println(root.getChildren().size());
+                            lines.remove(line);
 
                             // ui thread shouldn't modify lines list apparently WHY???
                             Task<Void> removeLine = new Task<Void>() {
@@ -230,11 +233,24 @@ public class ShapeDraw extends Application {
     }
     
 
-    private void drawImage(Pane root)
+    private void resetLinePoints(TextArea text)
     {
 	
-        /*Image image = new Image("../core/assets/color_wheel.png);
-        root.getChildren().add(image);*/
+        text.clear();
+        System.out.println(lines.size());
+        int numberOfLines = lines.size();
+        String points = "";
+        for (int x = 0; x < numberOfLines; x++)
+        {
+            points += lines.get(x).getStartX() + ", " + lines.get(x).getStartY() + ", " + lines.get(x).getEndX() + ", " + lines.get(x).getEndY();
+
+            if (x < numberOfLines - 1)
+            {
+                points += ", ";
+            } 
+            
+        }
+        text.appendText(points);
 
     }
 
