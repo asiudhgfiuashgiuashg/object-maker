@@ -26,12 +26,13 @@ public class ShapeDraw extends Application {
         launch(args);
     }
 
+    private String fileName;
     private double mouseDownX;
     private double mouseDownY;
     private List<SelectableLine> lines;
     private TextArea textArea;
-    private int imageWidth = 300;
-    private int imageHeight = 300;
+    private double imageWidth = 300;
+    private double imageHeight = 300;
     private double imageHeightScaleForAllocatingSpaceForTextarea;
     private boolean lineInProgress = true;
     private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
@@ -39,6 +40,18 @@ public class ShapeDraw extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        fileName = this.getParameters().getUnnamed().get(0);
+        Image image = null;
+        try {
+           image = new Image(fileName);
+        } catch (IllegalArgumentException e) {
+            System.out.println("pls use a real file ty");
+            System.exit(0);
+        }
+        
+        imageWidth = image.getWidth();
+        imageHeight = image.getHeight();
+
         lines = new ArrayList<>();
         imageHeightScaleForAllocatingSpaceForTextarea = 1.5;
 
@@ -54,7 +67,8 @@ public class ShapeDraw extends Application {
         primaryStage.setResizable(false);
         primaryStage.sizeToScene();
         
-    	Image image = new Image("color_wheel.png");
+       
+
     	ImageView view = new ImageView();
     	view.setImage(image);
     	imagePane.getChildren().add(view);
