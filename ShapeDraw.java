@@ -240,7 +240,7 @@ public class ShapeDraw extends Application {
         String points = "";
         for (int x = 0; x < numberOfLines; x++)
         {
-            points += lines.get(x).getStartX() + ", " + lines.get(x).getStartY() + ", " + lines.get(x).getEndX() + ", " + lines.get(x).getEndY();
+            points += lines.get(x).getStartX() + ", " + (imageHeight - lines.get(x).getStartY()) + ", " + lines.get(x).getEndX() + ", " + (imageHeight - lines.get(x).getEndY());
 
             if (x < numberOfLines - 1)
             {
