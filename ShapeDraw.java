@@ -115,9 +115,19 @@ public class ShapeDraw extends Application {
                 if (mouseDownY < imageHeight) {
                     SelectableLine line = new SelectableLine();
                     line.setStroke(LIGHTER_GREY);
-                    lines.add(line);
-                    line.setStartX(mouseDownX);
-                    line.setStartY(mouseDownY);
+                    
+                    if(lines.isEmpty())
+                    {
+                        lines.add(line);
+                        line.setStartX(mouseDownX);
+                        line.setStartY(mouseDownY);
+                    }
+                    else
+                    {
+                        lines.add(line);
+                        line.setStartX(lines.get(lines.size() -2).getEndX());
+                        line.setStartY(lines.get(lines.size() -2).getEndY());
+                    }
                     //line is initially a dot
                     line.setEndX(mouseDownX);
                     line.setEndY(mouseDownY);
@@ -215,6 +225,16 @@ public class ShapeDraw extends Application {
                     for (SelectableLine line: lines) {
                         line.setSelected(true);
                     }
+                }
+                if (event.getCode() == KeyCode.ENTER) 
+                {
+                    SelectableLine line = new SelectableLine();
+                    line.setStroke(LIGHTER_GREY);
+                    lines.add(line);
+                    line.setStartX(lines.get(lines.size() -1).getEndX());
+                    line.setStartY(lines.get(lines.size() -1).getEndY());
+                    line.setEndX(lines.get(0).getStartX());
+                    line.setEndY(lines.get(0).getStartY());
                 }
             }
         });
