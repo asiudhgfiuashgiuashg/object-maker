@@ -37,6 +37,8 @@ public class ShapeDraw extends Application {
     private boolean lineInProgress = true;
     private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
     private final Color DARKER_GREY = Color.rgb(10, 10, 10);
+    private final int LINE_THICKNESS = 4;
+    private boolean finishedState = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -106,63 +108,61 @@ public class ShapeDraw extends Application {
             public void handle(MouseEvent event) {
                 System.out.println("dragdetected");
                 //System.out.println("MOUSE_DRAGGED: " + "x: " + String.valueOf(event.getSceneX()) + " ,y: " + String.valueOf(event.getSceneY()));
-                lineInProgress = true;
-
-                mouseDownX = event.getSceneX();
-                mouseDownY = event.getSceneY();
-
-            
-                if (mouseDownY < imageHeight) {
-                    SelectableLine line = new SelectableLine();
-                    line.setStroke(LIGHTER_GREY);
-                    
-                    if(lines.isEmpty())
-                    {
-                        lines.add(line);
-                        line.setStartX(mouseDownX);
-                        line.setStartY(mouseDownY);
-                    }
-                    else
-                    {
-                        lines.add(line);
-                        line.setStartX(lines.get(lines.size() -2).getEndX());
-                        line.setStartY(lines.get(lines.size() -2).getEndY());
-                    }
-                    //line is initially a dot
-                    line.setEndX(mouseDownX);
-                    line.setEndY(mouseDownY);
-
-                    line.setStrokeWidth(4);
-
-                    //for selecting lines
-                    line.setOnMousePressed(new EventHandler<MouseEvent>() {
-                        //indicate mouse down click
-                        @Override
-                        public void handle(MouseEvent event) {
-                            if (line.isSelected()) {
-                                line.setStroke(Color.DARKRED);
-                            } else {
-                                line.setStroke(DARKER_GREY);
-                            }
+                if (!finishedState) {
+                    lineInProgress = true;
+    
+                    mouseDownX = event.getSceneX();
+                    mouseDownY = event.getSceneY();
+    
+                    if (mouseDownY < imageHeight) {
+                        SelectableLine line = new SelectableLine();
+                        line.setStroke(LIGHTER_GREY);
+    
+                        if(lines.isEmpty()) {
+                            lines.add(line);
+                            line.setStartX(mouseDownX);
+                            line.setStartY(mouseDownY);
+                        } else {
+                            lines.add(line);
+                            line.setStartX(lines.get(lines.size() -2).getEndX());
+                            line.setStartY(lines.get(lines.size() -2).getEndY());
                         }
-                    });
-
-                    line.setOnMouseReleased(new EventHandler<MouseEvent>() {
-                        @Override
-                        public void handle(MouseEvent event) {
-
-                            if (line.isSelected() || lineInProgress) {
-                                line.setStroke(LIGHTER_GREY);
-                                line.setSelected(false);
-                            } else {
-                                line.setSelected(true);
+                        //line is initially a dot
+                        line.setEndX(mouseDownX);
+                        line.setEndY(mouseDownY);
+    
+                        line.setStrokeWidth(LINE_THICKNESS);
+    
+                        //for selecting lines
+                        line.setOnMousePressed(new EventHandler<MouseEvent>() {
+                            //indicate mouse down click
+                            @Override
+                            public void handle(MouseEvent event) {
+                                if (line.isSelected()) {
+                                    line.setStroke(Color.DARKRED);
+                                } else {
+                                    line.setStroke(DARKER_GREY);
+                                }
                             }
-                        }
-                    });
-
-
-
-                    imagePane.getChildren().add(line);
+                        });
+    
+                        line.setOnMouseReleased(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent event) {
+    
+                                if (line.isSelected() || lineInProgress) {
+                                    line.setStroke(LIGHTER_GREY);
+                                    line.setSelected(false);
+                                } else {
+                                    line.setSelected(true);
+                                }
+                            }
+                        });
+    
+    
+    
+                        imagePane.getChildren().add(line);
+                    }
                 }
             }
         });
@@ -175,7 +175,7 @@ public class ShapeDraw extends Application {
                     lineInProgress = false;
                     resetLinePoints(textArea);
 
-                }   
+                }
             }
         });
         imagePane.setOnMouseDragged(new EventHandler<MouseEvent>() {
@@ -226,15 +226,23 @@ public class ShapeDraw extends Application {
                         line.setSelected(true);
                     }
                 }
-                if (event.getCode() == KeyCode.ENTER) 
-                {
-                    SelectableLine line = new SelectableLine();
-                    line.setStroke(LIGHTER_GREY);
-                    lines.add(line);
-                    line.setStartX(lines.get(lines.size() -1).getEndX());
-                    line.setStartY(lines.get(lines.size() -1).getEndY());
-                    line.setEndX(lines.get(0).getStartX());
-                    line.setEndY(lines.get(0).getStartY());
+                if (event.getCode() == KeyCode.ENTER) {
+                    if (!finishedState) { // if the final line doesn't exist yet
+                        SelectableLine line = new SelectableLine();
+                        line.setStroke(LIGHTER_GREY);
+                        lines.add(line);
+                        line.setStartX(lines.get(lines.size() - 2).getEndX());
+                        line.setStartY(lines.get(lines.size() - 2).getEndY());
+                        line.setEndX(lines.get(0).getStartX());
+                        line.setEndY(lines.get(0).getStartY());
+                        imagePane.getChildren().add(line);
+                        line.setStrokeWidth(LINE_THICKNESS);
+                        finishedState = true;
+                    } else { // if the final line exists and we want to remove it and keep drawing
+                        imagePane.getChildren().remove(lines.get(lines.size() - 1));
+                        lines.remove(lines.size() - 1);
+                        finishedState = false;
+                    }
                 }
             }
         });
