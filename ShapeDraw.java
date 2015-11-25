@@ -243,6 +243,7 @@ public class ShapeDraw extends Application {
                         lines.remove(lines.size() - 1);
                         finishedState = false;
                     }
+                    resetLinePoints(textArea);
                 }
             }
         });
