@@ -1,2 +1,2 @@
-# shape-maker
-draw shapes over images for tile-game
+# map-maker
+gui for map creation
