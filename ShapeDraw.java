@@ -21,6 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import java.io.*;
+import java.awt.Point;
 
 /*
  * json library
@@ -38,8 +39,7 @@ public class ShapeDraw extends Application {
     private List<SelectableLine> lines;
     private double imageWidth = 300;
     private double imageHeight = 300;
-    private boolean lineInProgress = true;
-    private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
+    private boolean lineInProgress = false;
     private final Color DARKER_GREY = Color.rgb(10, 10, 10);
     private boolean finishedState = false;
     private GameObject gameObject = null;
@@ -84,8 +84,14 @@ public class ShapeDraw extends Application {
         VBox root = new VBox();
         imagePane = new Pane();
         imagePane.setPrefSize(imageWidth, imageHeight);
-        double sceneHeight = imageHeight;
+        
         root.getChildren().add(imagePane);
+
+        Button saveButton = new Button("SAVE");
+        root.getChildren().add(saveButton);
+        saveButton.setPrefHeight(30);
+        double sceneHeight = imageHeight + saveButton.getPrefHeight();
+
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -127,7 +133,7 @@ public class ShapeDraw extends Application {
     
                     if (mouseDownY < imageHeight) {
                         SelectableLine line = new SelectableLine();
-                        line.setStroke(LIGHTER_GREY);
+                        line.setStroke(SelectableLine.LIGHTER_GREY);
     
                         if(lines.isEmpty()) {
                             lines.add(line);
@@ -141,33 +147,7 @@ public class ShapeDraw extends Application {
                         //line is initially a dot
                         line.setEndX(mouseDownX);
                         line.setEndY(mouseDownY);
-    
-    
-                        //for selecting lines
-                        line.setOnMousePressed(new EventHandler<MouseEvent>() {
-                            //indicate mouse down click
-                            @Override
-                            public void handle(MouseEvent event) {
-                                if (line.isSelected()) {
-                                    line.setStroke(Color.DARKRED);
-                                } else {
-                                    line.setStroke(DARKER_GREY);
-                                }
-                            }
-                        });
-    
-                        line.setOnMouseReleased(new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent event) {
-    
-                                if (line.isSelected() || lineInProgress) {
-                                    line.setStroke(LIGHTER_GREY);
-                                    line.setSelected(false);
-                                } else {
-                                    line.setSelected(true);
-                                }
-                            }
-                        });
+
     
     
     
@@ -236,7 +216,7 @@ public class ShapeDraw extends Application {
                 if (event.getCode() == KeyCode.ENTER) {
                     if (!finishedState) { // if the final line doesn't exist yet
                         SelectableLine line = new SelectableLine();
-                        line.setStroke(LIGHTER_GREY);
+                        line.setStroke(SelectableLine.LIGHTER_GREY);
                         lines.add(line);
                         line.setStartX(lines.get(lines.size() - 2).getEndX());
                         line.setStartY(lines.get(lines.size() - 2).getEndY());
@@ -262,11 +242,22 @@ public class ShapeDraw extends Application {
      */
     private void populateLines() {
         for (int i = 0; i < gameObject.hitboxPoints.size(); i += 1) {
-            int endIndex = i - 1 >= 0 ? i - 1 : gameObject.hitboxPoints.size() + i - 1;
-            int beginIndex = i;
+            int beginIndex = i - 1 >= 0 ? i - 1 : gameObject.hitboxPoints.size() + i - 1;
+            int endIndex = i;
             SelectableLine line = new SelectableLine(gameObject.hitboxPoints.get(beginIndex), gameObject.hitboxPoints.get(endIndex));
             imagePane.getChildren().add(line);
             lines.add(line);
+        }
+    }
+
+    /**
+     * take the lines on the canvas and convert them into points for the object's hitbox
+     * call this before saving
+     */
+    private void putLinesInGameObject() {
+        gameObject.hitboxPoints.clear();
+        for (SelectableLine line: lines) {
+            gameObject.hitboxPoints.add(new Point((int) line.getStartX(), (int) line.getStartY()));
         }
     }
 
