@@ -20,6 +20,12 @@ import javafx.concurrent.Task;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
+import java.io.*;
+
+/*
+ * json library
+ */
+import com.esotericsoftware.jsonbeans.*;
 
 public class ShapeDraw extends Application {
     public static void main(String[] args) {
@@ -30,23 +36,35 @@ public class ShapeDraw extends Application {
     private double mouseDownX;
     private double mouseDownY;
     private List<SelectableLine> lines;
-    private TextArea textArea;
     private double imageWidth = 300;
     private double imageHeight = 300;
-    private double imageHeightScaleForAllocatingSpaceForTextarea;
     private boolean lineInProgress = true;
     private final Color LIGHTER_GREY = Color.rgb(50, 50, 50);
     private final Color DARKER_GREY = Color.rgb(10, 10, 10);
-    private final int LINE_THICKNESS = 4;
     private boolean finishedState = false;
+    private GameObject gameObject = null;
+    private Pane imagePane;
 
     @Override
     public void start(Stage primaryStage) {
         
         Image image = null;
         try {
-           fileName = this.getParameters().getUnnamed().get(0);
-           image = new Image(fileName);
+            fileName = this.getParameters().getUnnamed().get(0);
+            File file = new File(fileName);
+            if (file.exists()) {
+                gameObject = getGameObjectFromFile(file);
+                
+
+            } else { //user-specified gameobject file doesnt exist
+                /*
+                 * make a gameobject without a hitbox or image
+                 */
+                gameObject = new GameObject();
+                gameObject.imageFile = new File("color_wheel.png"); //placeholder
+            }
+            image = new Image(gameObject.imageFile.getName());
+            
         } catch (IllegalArgumentException e) {
             System.out.println("pls use a real file ty");
             System.exit(0);
@@ -59,14 +77,14 @@ public class ShapeDraw extends Application {
         imageHeight = image.getHeight();
 
         lines = new ArrayList<>();
-        imageHeightScaleForAllocatingSpaceForTextarea = 1.5;
+
 
         primaryStage.setTitle("Draw Shapes");
         
         VBox root = new VBox();
-        Pane imagePane = new Pane();
+        imagePane = new Pane();
         imagePane.setPrefSize(imageWidth, imageHeight);
-        double sceneHeight = imageHeight * imageHeightScaleForAllocatingSpaceForTextarea;
+        double sceneHeight = imageHeight;
         root.getChildren().add(imagePane);
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
@@ -81,18 +99,11 @@ public class ShapeDraw extends Application {
 	    
 
 	
-
-        textArea = new TextArea("Shape output will go here.");
-        textArea.setEditable(true);
-        textArea.setWrapText(true);
-
-        textArea.setPrefHeight(sceneHeight - imageHeight);
         System.out.println("imageHeight: " + String.valueOf(imageHeight));
-        root.getChildren().add(textArea);
         root.setAlignment(Pos.BOTTOM_CENTER);
         primaryStage.show();
 	
-	    System.out.println(scene.getWidth());
+	    populateLines();
 
         imagePane.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
@@ -131,7 +142,6 @@ public class ShapeDraw extends Application {
                         line.setEndX(mouseDownX);
                         line.setEndY(mouseDownY);
     
-                        line.setStrokeWidth(LINE_THICKNESS);
     
                         //for selecting lines
                         line.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -173,8 +183,6 @@ public class ShapeDraw extends Application {
                 System.out.println("mouse released");
                 if (lineInProgress) {
                     lineInProgress = false;
-                    resetLinePoints(textArea);
-
                 }
             }
         });
@@ -218,7 +226,6 @@ public class ShapeDraw extends Application {
                         imagePane.getChildren().remove(line);
                         System.out.println("removing line: " + line);
 
-                        resetLinePoints(textArea);
                     }
                 }
                 if (event.isControlDown() && event.getCode() == KeyCode.A) {
@@ -236,69 +243,51 @@ public class ShapeDraw extends Application {
                         line.setEndX(lines.get(0).getStartX());
                         line.setEndY(lines.get(0).getStartY());
                         imagePane.getChildren().add(line);
-                        line.setStrokeWidth(LINE_THICKNESS);
                         finishedState = true;
                     } else { // if the final line exists and we want to remove it and keep drawing
                         imagePane.getChildren().remove(lines.get(lines.size() - 1));
                         lines.remove(lines.size() - 1);
                         finishedState = false;
                     }
-                    resetLinePoints(textArea);
                 }
             }
         });
 
-        textArea.setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                System.out.println("mouse entered textArea - focusing text area");
-                imagePane.requestFocus();
-            }
-        });
 
         primaryStage.show();
     }
     
-
-    private void resetLinePoints(TextArea text)
-    {
-	
-        text.clear();
-        System.out.println(lines.size());
-        int numberOfLines = lines.size();
-        String points = "";
-        for (int x = 0; x < numberOfLines; x++)
-        {
-            points += lines.get(x).getStartX() + ", " + (imageHeight - lines.get(x).getStartY()) + ", " + lines.get(x).getEndX() + ", " + (imageHeight - lines.get(x).getEndY());
-
-            if (x < numberOfLines - 1)
-            {
-                points += ", ";
-            } 
-            
-        }
-        text.appendText(points);
-
-    }
-
-    private class SelectableLine extends Line {
-        private boolean selected;
-
-        private SelectableLine() {
-            super();
-            selected = false;
-        }
-
-        private void setSelected(boolean selected) {
-            if (selected) {
-                this.setStroke(Color.RED);
-            }
-            this.selected = selected;
-        }
-
-        private boolean isSelected() {
-            return selected;
+    /**
+     * take the points of the object's hitbox and make them into lines on the canvas
+     */
+    private void populateLines() {
+        for (int i = 0; i < gameObject.hitboxPoints.size(); i += 1) {
+            int endIndex = i - 1 >= 0 ? i - 1 : gameObject.hitboxPoints.size() + i - 1;
+            int beginIndex = i;
+            SelectableLine line = new SelectableLine(gameObject.hitboxPoints.get(beginIndex), gameObject.hitboxPoints.get(endIndex));
+            imagePane.getChildren().add(line);
+            lines.add(line);
         }
     }
+
+    /**
+     * @param fileName the name of the object file in the same directory
+     * @return the jsonvalue stored in this file
+     */
+    private GameObject getGameObjectFromFile(File file) {
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            System.out.println("game object file: " + file.getName() + " not found");
+            System.exit(-1);
+        }
+        
+        GameObjectSerializer serializer = new GameObjectSerializer();
+        Json json = new Json();
+        json.setSerializer(GameObject.class, new GameObjectSerializer());
+        return json.fromJson(GameObject.class, fileReader);
+    }
+
 }
 
