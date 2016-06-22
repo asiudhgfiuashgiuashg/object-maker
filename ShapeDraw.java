@@ -88,6 +88,7 @@ public class ShapeDraw extends Application {
         root.getChildren().add(imagePane);
 
         Button saveButton = new Button("SAVE");
+        saveButton.setOnAction(new SaveButtonActionHandler(gameObject, lines));
         root.getChildren().add(saveButton);
         saveButton.setPrefHeight(30);
         double sceneHeight = imageHeight + saveButton.getPrefHeight();
@@ -97,7 +98,7 @@ public class ShapeDraw extends Application {
         primaryStage.setResizable(false);
         primaryStage.sizeToScene();
         
-       
+        
 
     	ImageView view = new ImageView();
     	view.setImage(image);
@@ -250,16 +251,7 @@ public class ShapeDraw extends Application {
         }
     }
 
-    /**
-     * take the lines on the canvas and convert them into points for the object's hitbox
-     * call this before saving
-     */
-    private void putLinesInGameObject() {
-        gameObject.hitboxPoints.clear();
-        for (SelectableLine line: lines) {
-            gameObject.hitboxPoints.add(new Point((int) line.getStartX(), (int) line.getStartY()));
-        }
-    }
+    
 
     /**
      * @param fileName the name of the object file in the same directory
