@@ -11,24 +11,24 @@ import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.image.Image;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.concurrent.Task;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.geometry.Pos;
 import java.io.*;
 import java.awt.Point;
+import javafx.beans.value.*;
 
 /*
  * json library
  */
 import com.esotericsoftware.jsonbeans.*;
 
-public class ShapeDraw extends Application {
+public class ObjectMaker extends Application {
     public static void main(String[] args) {
         launch(args);
     }
@@ -37,13 +37,18 @@ public class ShapeDraw extends Application {
     private double mouseDownX;
     private double mouseDownY;
     private List<SelectableLine> lines;
-    private double imageWidth = 300;
-    private double imageHeight = 300;
+
     private boolean lineInProgress = false;
     private final Color DARKER_GREY = Color.rgb(10, 10, 10);
     private boolean finishedState = false;
     private GameObject gameObject = null;
     private Pane imagePane;
+
+    private ImageView imageView;
+    /**
+     * the file that the game object is loaded from or saved to
+     */
+    private File objectFile;
 
     @Override
     public void start(Stage primaryStage) {
@@ -51,9 +56,9 @@ public class ShapeDraw extends Application {
         Image image = null;
         try {
             fileName = this.getParameters().getUnnamed().get(0);
-            File file = new File(fileName);
-            if (file.exists()) {
-                gameObject = getGameObjectFromFile(file);
+            objectFile = new File(fileName);
+            if (objectFile.exists()) {
+                gameObject = getGameObjectFromFile(objectFile);
                 
 
             } else { //user-specified gameobject file doesnt exist
@@ -61,7 +66,7 @@ public class ShapeDraw extends Application {
                  * make a gameobject without a hitbox or image
                  */
                 gameObject = new GameObject();
-                gameObject.imageFile = new File("color_wheel.png"); //placeholder
+                gameObject.imageFile = new File("default_image.png"); //placeholder
             }
             image = new Image(gameObject.imageFile.getName());
             
@@ -73,25 +78,75 @@ public class ShapeDraw extends Application {
             System.exit(0);
         }
 
-        imageWidth = image.getWidth();
-        imageHeight = image.getHeight();
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
 
         lines = new ArrayList<>();
 
 
-        primaryStage.setTitle("Draw Shapes");
+        primaryStage.setTitle("Game Object File: " + objectFile.getName());
         
         VBox root = new VBox();
         imagePane = new Pane();
         imagePane.setPrefSize(imageWidth, imageHeight);
+
+        
         
         root.getChildren().add(imagePane);
 
+        
+        
+        imageView = new ImageView();
+        imageView.setImage(image);
+        imagePane.getChildren().add(imageView);
+        
+        
+
+        /*
+         * add button which is used to select the object's image
+         */
+        Button imageFileButton = new Button(gameObject.imageFile.getName());
+        imageFileButton.setPrefHeight(30);
+        imageFileButton.setOnAction(new ImageFileButtonHandler(primaryStage, imageView, gameObject));
+        root.getChildren().add(imageFileButton);
+
+        /*
+         * create button which is used to save
+         */
         Button saveButton = new Button("SAVE");
-        saveButton.setOnAction(new SaveButtonActionHandler(gameObject, lines));
-        root.getChildren().add(saveButton);
+        saveButton.setOnAction(new SaveButtonActionHandler(gameObject, lines, objectFile));
         saveButton.setPrefHeight(30);
-        double sceneHeight = imageHeight + saveButton.getPrefHeight();
+        root.getChildren().add(saveButton);
+
+        /*
+         * the following listeners support the automatic resizing of the application upon selecting a new image for the object
+         */
+        imageView.fitHeightProperty().addListener(new ChangeListener<Number>() {
+
+                @Override
+                public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue, Number newValue) {
+                    imagePane.setPrefHeight(newValue.doubleValue());
+                    primaryStage.setHeight(imageView.getImage().getHeight() + saveButton.getHeight() + imageFileButton.getHeight());
+            }
+        });
+
+        imageView.fitWidthProperty().addListener(new ChangeListener<Number>() {
+
+                @Override
+                public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue, Number newValue) {
+                    imagePane.setPrefWidth(newValue.doubleValue());
+                    primaryStage.setWidth(imageView.getImage().getWidth());
+            }
+        });
+
+        double sceneHeight = imageHeight + saveButton.getPrefHeight() + imageFileButton.getPrefHeight();
+
+
+        
+        
+
 
 	    Scene scene = new Scene(root, imageWidth, sceneHeight);
         primaryStage.setScene(scene);
@@ -100,10 +155,7 @@ public class ShapeDraw extends Application {
         
         
 
-    	ImageView view = new ImageView();
-    	view.setImage(image);
-    	imagePane.getChildren().add(view);
-	    
+    	
 
 	
         System.out.println("imageHeight: " + String.valueOf(imageHeight));
@@ -132,7 +184,7 @@ public class ShapeDraw extends Application {
                     mouseDownX = event.getSceneX();
                     mouseDownY = event.getSceneY();
     
-                    if (mouseDownY < imageHeight) {
+                    if (mouseDownY < imageView.getImage().getHeight()) {
                         SelectableLine line = new SelectableLine();
                         line.setStroke(SelectableLine.LIGHTER_GREY);
     
@@ -177,8 +229,8 @@ public class ShapeDraw extends Application {
                     double endY;
                     if (event.getSceneY() < 0) {
                         endY = 0;
-                    } else if (event.getSceneY() > imageHeight) {
-                        endY = imageHeight;
+                    } else if (event.getSceneY() > imageView.getImage().getHeight()) {
+                        endY = imageView.getImage().getHeight();
                     } else {
                         endY = event.getSceneY();
                     }

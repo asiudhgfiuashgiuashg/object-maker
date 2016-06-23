@@ -16,14 +16,17 @@ import java.awt.Point;
 public class SaveButtonActionHandler implements EventHandler<ActionEvent> {
 	private GameObject gameObject;
 	private List<SelectableLine> lines;
+	private File objectFile;
 
 	/**
 	 * @param gameObject the object to save
 	 * @param lines the lines to convert to gameObject's hitbox points before saving
+	 * @param the file to save to
 	 */
-	public SaveButtonActionHandler(GameObject gameObject, List<SelectableLine> lines) {
+	public SaveButtonActionHandler(GameObject gameObject, List<SelectableLine> lines, File objectFile) {
 		this.gameObject = gameObject;
 		this.lines = lines;
+		this.objectFile = objectFile;
 	}
 
 	@Override
@@ -34,7 +37,7 @@ public class SaveButtonActionHandler implements EventHandler<ActionEvent> {
         json.setSerializer(GameObject.class, new GameObjectSerializer());
         FileWriter writer = null;
         try {
-        	writer = new FileWriter(new File("test.out"));
+        	writer = new FileWriter(objectFile);
         } catch (IOException exception) {
         	System.out.println("issue making the FileWriter");
         	System.exit(-1);
