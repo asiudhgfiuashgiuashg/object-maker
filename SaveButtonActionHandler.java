@@ -34,6 +34,7 @@ public class SaveButtonActionHandler implements EventHandler<ActionEvent> {
         System.out.println("saving");
         putLinesInGameObject();
         Json json = new Json();
+        json.setOutputType(OutputType.json); //make sure valid json is outputted not some gross pseudo json
         json.setSerializer(GameObject.class, new GameObjectSerializer());
         FileWriter writer = null;
         try {
